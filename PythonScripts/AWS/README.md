@@ -1,6 +1,6 @@
 #Python Scripts
 
-Details per script: 
+Script Usage :- 
 
 1) used_unused_security_groups.py
 It will check used security groups by EC2,ELB,RDS. For other services feel free to extend the script.   
@@ -12,4 +12,8 @@ Pre requisites: python, python module - boto3
 
 3) delete_unused_security_groups.py
 Delete Unused Security Groups. It will not delete security groups which depends on any other resource or used by any resporce. 
+Pre requisites: python, python module - boto3
+
+4) delete_iam_user.py 
+Delete IAM User. 
 Pre requisites: python, python module - boto3
