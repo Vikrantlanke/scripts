@@ -90,8 +90,6 @@ download_nds_software(){
   status_check $? "NDS Data Copy"
   sudo cp -af $temp_mount_point/ConvEngConfig.sqlite /home/mapmetrics_sa/ConvEngConfig.sqlite
   status_check $? "SQLite File Copy"
-  sudo chown -R mapmetrics_sa:mapmetrics_sa $SERVER_DIRECTORY/*
-  sudo chmod 777 $SERVER_DIRECTORY/*
 
   #clean temporary files
   /bin/umount $temp_mount_point
@@ -101,7 +99,7 @@ download_nds_software(){
 }
 
 start_nds_routing_engine(){
-  /usr/bin/java -jar $SERVER_DIRECTORY/phonetics-converter-http-server-1.0.4264.jar &
+  /usr/bin/java -jar /server/phonetics-converter-http-server-1.0.4264.jar &
   status_check $? "phonetics converter start"
   $SERVER_DIRECTORY/NKWorkerEngine serverPort=9090 map=$DATA_MOUNT_POINT phoneticsBaseUrl=http://127.0.0.1:8080 preLoadCache=1 &
   status_check $? "NKWorkerEngine start"
@@ -134,7 +132,7 @@ start_osm_routing_engine(){
   #extract OSM pbf file path
   # shellcheck disable=SC2006
   osm_pbf_file_path=`find $DATA_MOUNT_POINT| grep -i pbf`
-  /usr/bin/java -Xmx32G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar $SERVER_DIRECTORY/graphhopper-web.jar server $SERVER_DIRECTORY/config.yml
+  /usr/bin/java -Xmx32G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar /server/graphhopper-web.jar server /server/config.yml &
   status_check $? "routing service start"
 }
 
@@ -191,6 +189,7 @@ elif [[ "$routingEngineType" == "TTNDS" ]];then
   create_directory
   mount_data "$accountName" "$spClientID" "$spTenantID" "$containerName"
   download_nds_software "$rtengaccountName" "$spClientID" "$spTenantID" "$rtengcontainerName"
+  sleep 10
   start_nds_routing_engine
 else
   echo "Invalid Routing Engine"
