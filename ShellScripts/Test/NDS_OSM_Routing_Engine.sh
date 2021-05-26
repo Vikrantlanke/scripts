@@ -118,7 +118,7 @@ download_osm_software() {
   wget -O $SERVER_DIRECTORY/config.yml https://raw.githubusercontent.com/graphhopper/graphhopper/${GRAPHHOPPER_VERSION}/config-example.yml
 
   #change graph hopper config
-  replace_line "graph.location" "graph.location: /data/graphhopper/202104/graph-cache" $SERVER_DIRECTORY/config.yml
+  replace_line "graph.location" "graph.location: $DATA_MOUNT_POINT/graph-cache" $SERVER_DIRECTORY/config.yml
   replace_line "graph.flag_encoders:" "graph.flag_encoders: car|block_private=false" $SERVER_DIRECTORY/config.yml
   replace_line "port: 8989" "port: 8080" $SERVER_DIRECTORY/config.yml
   replace_line "bind_host: localhost" "bind_host: 0.0.0.0" $SERVER_DIRECTORY/config.yml
@@ -132,7 +132,7 @@ start_osm_routing_engine(){
   #extract OSM pbf file path
   # shellcheck disable=SC2006
   osm_pbf_file_path=`find $DATA_MOUNT_POINT| grep -i pbf`
-  /usr/bin/java -Xmx32G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar /server/graphhopper-web.jar server /server/config.yml &
+  /usr/bin/java -Xmx25G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar /server/graphhopper-web.jar server /server/config.yml &
   status_check $? "routing service start"
 }
 
