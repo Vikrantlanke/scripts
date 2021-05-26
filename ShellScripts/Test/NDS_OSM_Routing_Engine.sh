@@ -31,7 +31,7 @@ install_app_packages() {
   status_check $? "Blobfuse Packages installation"
 
   #atomic1 library
-  apt install libatomic1 -y
+  sudo apt install libatomic1 -y
   status_check $? "Atomic Lib Packages installation"
 }
 
@@ -40,8 +40,10 @@ mount_data(){
   [ ! -d "/server/" ] && mkdir /server/
   touch /server/fuse_connection.cfg
   echo "accountName $1" >> /server/fuse_connection.cfg
-  echo "accountKey $2" >> /server/fuse_connection.cfg
-  echo "containerName $3" >> /server/fuse_connection.cfg
+  echo "authType SPN" >>  /server/fuse_connection.cfg
+  echo "servicePrincipalClientId $2" >> /server/fuse_connection.cfg
+  echo "servicePrincipalTenantId $3" >> /server/fuse_connection.cfg
+  echo "containerName $4" >> /server/fuse_connection.cfg
   chmod 600 /server/fuse_connection.cfg
   [ ! -d $DATA_MOUNT_POINT ] && sudo mkdir $DATA_MOUNT_POINT
   sudo blobfuse $DATA_MOUNT_POINT --tmp-path=/mnt/resource/blobfusetmp  --config-file=/server/fuse_connection.cfg \
@@ -52,11 +54,13 @@ mount_data(){
 download_nds_software(){
   # Download Software from Azure Blob Storage
   temp_mount_point="/mnt/nds_software"
-  [ ! -d "/server/" ] && mkdir /server/
-  touch /server/nds_software.cfg
+  [ ! -d "/server/" ] && sudo mkdir /server/
+  sudo touch /server/nds_software.cfg
   echo "accountName $1" >> /server/nds_software.cfg
-  echo "accountKey  $2" >> /server/nds_software.cfg
-  echo "containerName $3" >> /server/nds_software.cfg
+  echo "authType SPN" >> /server/nds_software.cfg
+  echo "servicePrincipalClientId  $2" >> /server/nds_software.cfg
+  echo "servicePrincipalTenantId $3" >> /server/nds_software.cfg
+  echo "containerName $4" >> /server/nds_software.cfg
   chmod 600 /server/nds_software.cfg
   sudo mkdir -p $temp_mount_point
   sudo blobfuse $temp_mount_point --tmp-path=/mnt/resource/nds_software  --config-file=/server/nds_software.cfg \
@@ -105,47 +109,52 @@ helpFunction()
    echo ""
    echo "Usage: $0 -t routingEngineType -a storageAccountName -k storageAccountKey -c containerName"
    echo -e "\t-t Enter a routing Engine Type: OSM or TTNDS"
+   echo -e "\t-C Enter Service Principle Client ID"
+   echo -e "\t-T Enter Service Principle Tenant ID"
+   echo -e "\t-S Enter Service Principle Client Secret"
    echo -e "\t-a (Data)Enter a Azure Storage Account Name."
-   echo -e "\t-k (Data)Enter Azure Storage Account Key."
    echo -e "\t-c (Data)Enter Azure Storage Container Name."
    echo -e "\t-r (Routing Engine)Enter a Azure Storage Account Name."
-   echo -e "\t-o (Routing Engine)Enter Azure Storage Account Key."
    echo -e "\t-u (Routing Engine)Enter Azure Storage Container Name."
    exit 1 # Exit script after printing help
 }
 
 # Executing the Script
-while getopts "t:a:k:c:r:o:u:" opt
+while getopts "t:C:T:S:a:c:r:u:" opt
 do
    case "$opt" in
       t ) routingEngineType="$OPTARG" ;;
+      C ) spClientID="$OPTARG" ;;
+      T ) spTenantID="$OPTARG" ;;
+      S ) spClientSecret="$OPTARG" ;;
       a ) accountName="$OPTARG" ;;
-      k ) accountKey="$OPTARG" ;;
       c ) containerName="$OPTARG" ;;
       r ) rtengaccountName="$OPTARG" ;;
-      o ) rtengaccountKey="$OPTARG" ;;
       u ) rtengcontainerName="$OPTARG" ;;
       ? ) helpFunction ;; # Print helpFunction in case parameter is non-existent
    esac
 done
 
 # Print helpFunction in case parameters are empty
-if [ -z "$routingEngineType" ] || [ -z "$accountName" ] || [ -z "$accountKey" ] || [ -z "$containerName" ]
+if [ -z "$routingEngineType" ] || [ -z "$spClientID" ] || [ -z "$spTenantID" ] || [ -z "$spClientSecret" ] || [ -z "$accountName" ] || [ -z "$containerName" ] || [ -z "$rtengaccountName" ] || [ -z "$rtengcontainerName" ]
 then
    echo "Some or all of the parameters are empty";
    helpFunction
 fi
 
+# Provide Azure SP Secret in file
+sudo /bin/su -c "echo AZURE_STORAGE_SPN_CLIENT_SECRET=$spClientSecret >> /etc/environment"
+
 # Actions based on Routing Engine
 if [[ "$routingEngineType" == "OSM" ]];then
   install_app_packages
-  mount_data "$accountName" "$accountKey" "$containerName"
+  mount_data "$accountName" "$spClientID" "$spTenantID" "$containerName"
   download_osm_software
   start_osm_routing_engine
 elif [[ "$routingEngineType" == "TTNDS" ]];then
   install_app_packages
-  mount_data "$accountName" "$accountKey" "$containerName"
-  download_nds_software "$rtengaccountName" "$rtengaccountKey" "$rtengcontainerName"
+  mount_data "$accountName" "$spClientID" "$spTenantID" "$containerName"
+  download_nds_software "$rtengaccountName" "$spClientID" "$spTenantID" "$rtengcontainerName"
   start_nds_routing_engine
 else
   echo "Invalid Routing Engine"
