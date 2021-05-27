@@ -132,7 +132,7 @@ start_osm_routing_engine(){
   #extract OSM pbf file path
   # shellcheck disable=SC2006
   osm_pbf_file_path=`find $DATA_MOUNT_POINT| grep -i pbf`
-  /usr/bin/java -Xmx25G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar /server/graphhopper-web.jar server /server/config.yml &
+  /usr/bin/java -Xmx29G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar /server/graphhopper-web.jar server /server/config.yml &
   status_check $? "routing service start"
 }
 
