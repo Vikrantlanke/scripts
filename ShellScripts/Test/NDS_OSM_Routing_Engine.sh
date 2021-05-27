@@ -109,8 +109,8 @@ start_nds_routing_engine(){
 
 download_osm_software() {
   # Log Directory
-  log_directory="$DATA_MOUNT_POINT/graphhopper/logs/$(hostname)"
-  mkdir -p "$log_directory"
+  log_directory="/var/log/graphhopper"
+  sudo mkdir -p "$log_directory"
   #download graph hopper artefact
   wget -O $SERVER_DIRECTORY/graphhopper-web.jar https://graphhopper.com/public/releases/graphhopper-web-${GRAPHHOPPER_VERSION}.jar
   status_check $? "Graphhopper download"
@@ -132,7 +132,7 @@ start_osm_routing_engine(){
   #extract OSM pbf file path
   # shellcheck disable=SC2006
   osm_pbf_file_path=`find $DATA_MOUNT_POINT| grep -i pbf`
-  /usr/bin/java -Xmx32G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar /server/graphhopper-web.jar server /server/config.yml &
+  sudo /usr/bin/java -Xmx32G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar /server/graphhopper-web.jar server /server/config.yml &
   status_check $? "routing service start"
 }
 
