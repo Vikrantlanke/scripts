@@ -99,11 +99,13 @@ download_nds_software(){
 }
 
 start_nds_routing_engine(){
-  /usr/bin/java -jar /server/phonetics-converter-http-server-1.0.4264.jar &
+  sudo /usr/bin/java -jar /server/phonetics-converter-http-server-1.0.4264.jar &> /var/log/phonetics-converter-http-server.log & disown
   status_check $? "phonetics converter start"
-  $SERVER_DIRECTORY/NKWorkerEngine serverPort=9090 map=$DATA_MOUNT_POINT phoneticsBaseUrl=http://127.0.0.1:8080 preLoadCache=1 &
+  sleep 10
+  sudo /server/NKWorkerEngine serverPort=9090 map=$DATA_MOUNT_POINT phoneticsBaseUrl=http://127.0.0.1:8080 preLoadCache=1 & disown
   status_check $? "NKWorkerEngine start"
-  $SERVER_DIRECTORY/routeservice -listen-addr :6599 -check-interval 15s -max-error-count 120 -endpoint 127.0.0.1:9090 &
+  sleep 10
+  sudo /server/routeservice -listen-addr :6599 -check-interval 15s -max-error-count 120 -endpoint 127.0.0.1:9090 & disown
   status_check $? "routing service start"
 }
 
@@ -190,7 +192,6 @@ elif [[ "$routingEngineType" == "TTNDS" ]];then
   create_directory
   mount_data "$accountName" "$spClientID" "$spTenantID" "$containerName"
   download_nds_software "$rtengaccountName" "$spClientID" "$spTenantID" "$rtengcontainerName"
-  sleep 10
   start_nds_routing_engine
 else
   echo "Invalid Routing Engine"
