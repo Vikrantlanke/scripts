@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Global Variables
-GRAPHHOPPER_VERSION=3.0
+GRAPHHOPPER_VERSION=2.3
 # Routing Engine Data directory
 DATA_MOUNT_POINT="/map"
 # Software Installation directory
