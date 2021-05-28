@@ -99,6 +99,7 @@ download_nds_software(){
 }
 
 start_nds_routing_engine(){
+  touch /var/log/phonetics-converter-http-server.log
   sudo /usr/bin/java -jar /server/phonetics-converter-http-server-1.0.4264.jar &> /var/log/phonetics-converter-http-server.log & disown
   status_check $? "phonetics converter start"
   sleep 10
