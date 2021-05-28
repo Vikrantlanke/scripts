@@ -99,14 +99,14 @@ download_nds_software(){
 }
 
 start_nds_routing_engine(){
-  touch /var/log/phonetics-converter-http-server.log
-  sudo /usr/bin/java -jar /server/phonetics-converter-http-server-1.0.4264.jar &> /var/log/phonetics-converter-http-server.log & disown
+  # Generate the log file
+  touch /var/log/phonetics-converter-http-server.log /var/log/NKWorkerEngine.log  /var/log/routeservice.log
+  sudo chown mapmetrics_sa:mapmetrics_sa /var/log/phonetics-converter-http-server.log /var/log/NKWorkerEngine.log  /var/log/routeservice.log
+  cd /home/mapmetrics_sa && /usr/bin/java -jar /server/phonetics-converter-http-server-1.0.4264.jar &> /var/log/phonetics-converter-http-server.log & disown
   status_check $? "phonetics converter start"
-  sleep 10
-  sudo /server/NKWorkerEngine serverPort=9090 map=$DATA_MOUNT_POINT phoneticsBaseUrl=http://127.0.0.1:8080 preLoadCache=1 & disown
+  /server/NKWorkerEngine serverPort=9090 map=$DATA_MOUNT_POINT phoneticsBaseUrl=http://127.0.0.1:8080 preLoadCache=1 &> /var/log/NKWorkerEngine.log & disown
   status_check $? "NKWorkerEngine start"
-  sleep 10
-  sudo /server/routeservice -listen-addr :6599 -check-interval 15s -max-error-count 120 -endpoint 127.0.0.1:9090 & disown
+  /server/routeservice -listen-addr :6599 -check-interval 15s -max-error-count 120 -endpoint 127.0.0.1:9090 &> /var/log/routeservice.log & disown
   status_check $? "routing service start"
 }
 
