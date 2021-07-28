@@ -26,6 +26,7 @@ replace_line(){
 #Install Base Packages
 install_app_packages() {
   #Install openjdk
+  sudo apt update
   sudo apt install openjdk-11-jre-headless -y
   status_check $? "Java Packages installation"
 
@@ -99,7 +100,7 @@ download_nds_software(){
 }
 
 start_nds_routing_engine(){
-  # Generate the log file
+  # Generate the log data for NDS
   touch /var/log/phonetics-converter-http-server.log /var/log/NKWorkerEngine.log  /var/log/routeservice.log
   sudo chown mapmetrics_sa:mapmetrics_sa /var/log/phonetics-converter-http-server.log /var/log/NKWorkerEngine.log  /var/log/routeservice.log
   cd /home/mapmetrics_sa && /usr/bin/java -jar /server/phonetics-converter-http-server-1.0.4264.jar &> /var/log/phonetics-converter-http-server.log & disown
@@ -135,7 +136,7 @@ start_osm_routing_engine(){
   #Copy graph-cache on local machine
   sudo cp -af $DATA_MOUNT_POINT/graph-cache/ /opt/
   #extract OSM pbf file path
-  osm_pbf_file_path=`find $DATA_MOUNT_POINT| grep -i pbf`
+  osm_pbf_file_path=$(find $DATA_MOUNT_POINT| grep -i pbf)
   sudo /usr/bin/java -Xmx42G -Ddw.graphhopper.datareader.file="$osm_pbf_file_path" -jar /server/graphhopper-web.jar server /server/config.yml &
   status_check $? "routing service start"
 }
