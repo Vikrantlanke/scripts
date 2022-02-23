@@ -116,10 +116,10 @@ download_osm_software() {
   log_directory="/var/log/graphhopper"
   sudo mkdir -p "$log_directory"
   #download graph hopper artefact
-  wget -O $SERVER_DIRECTORY/graphhopper-web.jar https://graphhopper.com/public/releases/graphhopper-web-${GRAPHHOPPER_VERSION}.jar
+  wget -O $SERVER_DIRECTORY/graphhopper-web.jar https://roadrunner2storage.blob.core.windows.net/devops/graphhopper-web-${GRAPHHOPPER_VERSION}.jar
   status_check $? "Graphhopper download"
   #download graph hopper config
-  wget -O $SERVER_DIRECTORY/config.yml https://raw.githubusercontent.com/graphhopper/graphhopper/${GRAPHHOPPER_VERSION}/config-example.yml
+  wget -O $SERVER_DIRECTORY/config.yml https://roadrunner2storage.blob.core.windows.net/devops/config-example-${GRAPHHOPPER_VERSION}.yml
 
   #change graph hopper config
   replace_line "graph.location" "graph.location: /opt/graph-cache" $SERVER_DIRECTORY/config.yml
